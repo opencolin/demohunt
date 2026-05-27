@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronUp } from "lucide-react";
 import { cn, formatCount } from "@/lib/utils";
 
 type Props = {
@@ -27,29 +26,37 @@ export function UpvoteButton({ initial, size = "lg" }: Props) {
   return (
     <button
       onClick={onClick}
-      className={cn(
-        "group flex flex-col items-center gap-1 rounded-2xl border transition active:scale-95",
-        large ? "px-3 py-3 w-16" : "px-2 py-2 w-12",
-        voted
-          ? "border-accent bg-accent text-black"
-          : "border-border bg-surface text-foreground hover:border-accent/60",
-      )}
       aria-pressed={voted}
+      className={cn(
+        "group flex flex-col items-center justify-center gap-1 border-2 border-ink bg-paper-elev transition active:translate-y-px",
+        large ? "w-[68px] py-2.5" : "w-12 py-1.5",
+        voted ? "bg-accent" : "hover:bg-accent",
+      )}
     >
-      <ChevronUp
-        className={cn(
-          large ? "h-5 w-5" : "h-4 w-4",
-          "transition-transform group-active:-translate-y-0.5",
-        )}
-        strokeWidth={2.5}
-      />
       <span
         className={cn(
-          "font-mono tabular-nums",
-          large ? "text-[13px]" : "text-[11px]",
+          "font-display leading-none",
+          large ? "text-[26px]" : "text-[18px]",
+        )}
+        aria-hidden
+      >
+        ↑
+      </span>
+      <span
+        className={cn(
+          "num-tag font-semibold tabular-nums",
+          large ? "text-[12px]" : "text-[10px]",
         )}
       >
         {formatCount(count)}
+      </span>
+      <span
+        className={cn(
+          "font-mono uppercase tracking-[0.18em] text-ink/70",
+          large ? "text-[8px]" : "text-[7px]",
+        )}
+      >
+        {voted ? "Voted" : "Vote"}
       </span>
     </button>
   );

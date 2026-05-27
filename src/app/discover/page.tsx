@@ -1,168 +1,215 @@
 import Link from "next/link";
-import { ChevronUp, Eye, Clock, Sparkles, Flame, Calendar, Bot } from "lucide-react";
+import { Eye, Flame, Sparkles, Calendar, Bot } from "lucide-react";
 import {
   demos,
   founderBySlug,
   type Demo,
 } from "@/lib/data";
 import { formatCount, timeAgo } from "@/lib/utils";
+import { SiteFooter } from "@/components/site-footer";
 
-const lists: { key: string; title: string; subtitle: string; filter: (d: Demo) => boolean; icon: React.ReactNode; accent: string }[] = [
+const lists: {
+  key: string;
+  title: string;
+  kicker: string;
+  subtitle: string;
+  filter: (d: Demo) => boolean;
+  icon: React.ReactNode;
+}[] = [
   {
     key: "top-today",
-    title: "Top today",
-    subtitle: "Most-upvoted in the last 24h",
+    title: "On the Front Page",
+    kicker: "Today",
+    subtitle: "What the algorithm picked at 09:00 PT.",
     filter: (d) => Date.now() - new Date(d.postedAt).getTime() < 36 * 3600 * 1000,
     icon: <Flame className="h-3.5 w-3.5" />,
-    accent: "text-orange-300",
   },
   {
     key: "rising",
-    title: "Rising fast",
-    subtitle: "Velocity > 100 upvotes/hour",
+    title: "Climbing the Chart",
+    kicker: "Velocity",
+    subtitle: "Most upvotes per hour, weighted against age.",
     filter: () => true,
     icon: <Sparkles className="h-3.5 w-3.5" />,
-    accent: "text-yellow-300",
   },
   {
     key: "from-demo-days",
-    title: "From demo days",
-    subtitle: "Captured live in San Francisco, Boston, Bangalore",
+    title: "From the Demo Floor",
+    kicker: "Live capture",
+    subtitle: "Pitches our cameras grabbed this week.",
     filter: (d) => d.source === "demo-day",
     icon: <Calendar className="h-3.5 w-3.5" />,
-    accent: "text-cyan-300",
   },
   {
     key: "ai-only",
-    title: "AI-generated",
-    subtitle: "100% synthetic. Filter on or off.",
+    title: "Synthesised",
+    kicker: "AI-only",
+    subtitle: "100% generative. Tag exists so you can hide it — or seek it.",
     filter: (d) => d.source === "ai-generated",
     icon: <Bot className="h-3.5 w-3.5" />,
-    accent: "text-purple-300",
   },
 ];
 
 export default function DiscoverPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Discover</h1>
-        <p className="mt-1 text-sm text-muted">
-          Curated lists. Subscribe to any list to get it in your inbox.
-        </p>
-      </header>
+    <>
+    <main className="mx-auto w-full max-w-7xl px-5 py-8">
+      <PageHead
+        kicker="Section II"
+        title="Discover"
+        sub="Curated lists, refreshed nightly. Subscribe to any of them — we'll deliver to your inbox."
+      />
 
-      <DigestBar />
+      <Digest />
 
-      <div className="mt-8 grid grid-cols-1 gap-8">
-        {lists.map((list) => {
-          const items = demos
+      <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-12">
+        {lists.map((list, listIdx) => {
+          const items = [...demos]
             .filter(list.filter)
             .sort((a, b) => b.upvotes - a.upvotes)
             .slice(0, 6);
           if (items.length === 0) return null;
           return (
-            <section key={list.key}>
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md bg-surface ${list.accent}`}>
-                    {list.icon}
-                  </span>
-                  <div>
-                    <h2 className="text-base font-semibold leading-tight">{list.title}</h2>
-                    <p className="text-xs text-muted">{list.subtitle}</p>
-                  </div>
+            <section key={list.key} className="lg:col-span-6">
+              <header className="mb-4 flex items-end justify-between border-b-2 border-ink pb-2">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+                    No. {String(listIdx + 1).padStart(2, "0")} · {list.kicker}
+                  </p>
+                  <h2 className="mt-1 font-display text-[30px] leading-none tracking-tight">
+                    {list.title}
+                  </h2>
+                  <p className="mt-1 max-w-md text-[13px] text-ink/75">{list.subtitle}</p>
                 </div>
-                <button className="rounded-full border border-border px-3 py-1 text-[11px] text-muted hover:border-accent hover:text-foreground">
+                <button className="hidden border-2 border-ink bg-paper-elev px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] hover:bg-accent sm:inline-flex">
                   Subscribe
                 </button>
-              </div>
-              <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
+              </header>
+              <ol className="divide-y-2 divide-ink/15">
                 {items.map((d, idx) => (
                   <DemoRow key={d.id} demo={d} rank={idx + 1} />
                 ))}
-              </ul>
+              </ol>
             </section>
           );
         })}
       </div>
     </main>
+    <SiteFooter />
+    </>
   );
 }
 
 function DemoRow({ demo, rank }: { demo: Demo; rank: number }) {
   const founder = founderBySlug(demo.founderSlug);
   return (
-    <li className="flex items-center gap-4 px-4 py-3 transition hover:bg-surface-2">
-      <span className="w-6 text-right font-mono text-[12px] text-muted">{rank}</span>
+    <li className="group flex items-center gap-4 py-3 transition hover:bg-paper-elev">
+      <span className="num-tag w-9 text-right font-display text-[28px] leading-none text-ink/80">
+        {String(rank).padStart(2, "0")}
+      </span>
       <Link
         href={`/demo/${demo.id}`}
-        className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-md border border-border bg-black"
+        className="relative aspect-video w-32 shrink-0 overflow-hidden border-2 border-ink bg-ink"
       >
         <img
           src={`https://i.ytimg.com/vi/${demo.youtubeId}/mqdefault.jpg`}
           alt=""
-          className="h-full w-full object-cover opacity-90"
+          className="h-full w-full object-cover opacity-90 transition group-hover:opacity-100"
         />
-        <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1 font-mono text-[10px] text-white">
-          {demo.durationSec}s
+        <span className="absolute bottom-1 right-1 num-tag bg-paper px-1 text-[9px] uppercase">
+          {demo.durationSec}″
         </span>
       </Link>
       <div className="min-w-0 flex-1">
         <Link
           href={`/demo/${demo.id}`}
-          className="line-clamp-1 text-[14px] font-medium hover:text-accent"
+          className="font-display text-[18px] leading-tight tracking-[-0.01em] group-hover:underline group-hover:decoration-accent group-hover:decoration-4 group-hover:underline-offset-[3px]"
         >
           {demo.title}
         </Link>
-        <p className="line-clamp-1 text-[12px] text-muted">{demo.tagline}</p>
-        <div className="mt-1 flex items-center gap-3 text-[11px] text-muted">
+        <p className="mt-0.5 line-clamp-1 text-[12px] text-ink/75 italic">{demo.tagline}</p>
+        <div className="mt-1 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
           {founder && (
-            <Link href={`/founders/${founder.slug}`} className="hover:text-foreground">
-              @{founder.handle}
-            </Link>
+            <Link href={`/founders/${founder.slug}`}>@{founder.handle}</Link>
           )}
           <span className="inline-flex items-center gap-1">
             <Eye className="h-3 w-3" />
-            {formatCount(demo.views)}
+            <span className="num-tag">{formatCount(demo.views)}</span>
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {timeAgo(demo.postedAt)}
-          </span>
+          <span>{timeAgo(demo.postedAt)}</span>
         </div>
       </div>
-      <div className="flex shrink-0 flex-col items-center gap-0.5 rounded-md border border-border px-2 py-1.5">
-        <ChevronUp className="h-3.5 w-3.5" strokeWidth={2.5} />
-        <span className="font-mono text-[11px] tabular-nums">{formatCount(demo.upvotes)}</span>
+      <div className="flex w-12 shrink-0 flex-col items-center border-2 border-ink bg-paper-elev py-1 group-hover:bg-accent">
+        <span className="font-display text-[18px] leading-none" aria-hidden>
+          ↑
+        </span>
+        <span className="num-tag text-[10px]">{formatCount(demo.upvotes)}</span>
       </div>
     </li>
   );
 }
 
-function DigestBar() {
+function PageHead({
+  kicker,
+  title,
+  sub,
+}: {
+  kicker: string;
+  title: string;
+  sub?: string;
+}) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-sm font-medium">The Demo Hunt Digest</p>
-        <p className="mt-0.5 text-xs text-muted">
-          Top demos in your inbox. Daily, weekly, or monthly.
+    <header className="border-b-2 border-ink pb-4">
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+        {kicker}
+      </p>
+      <h1 className="mt-1 font-display text-[64px] leading-[0.92] tracking-[-0.02em] sm:text-[88px]">
+        {title}
+      </h1>
+      {sub && <p className="mt-3 max-w-xl text-[14px] text-ink/80">{sub}</p>}
+    </header>
+  );
+}
+
+function Digest() {
+  return (
+    <div className="mt-8 grid grid-cols-1 gap-0 border-2 border-ink bg-paper-elev md:grid-cols-[1.2fr_1fr]">
+      <div className="border-b-2 border-ink p-6 md:border-b-0 md:border-r-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+          The Wire — newsletter
+        </p>
+        <h3 className="mt-2 font-display text-[32px] leading-none tracking-tight">
+          The Demo Hunt Digest
+        </h3>
+        <p className="mt-3 max-w-md text-[13px] text-ink/80">
+          Top demos in your inbox. We pick three. You read for two minutes. You move
+          on with your day.
         </p>
       </div>
-      <form className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-        <input
-          type="email"
-          required
-          placeholder="you@startup.com"
-          className="rounded-full border border-border bg-background px-3.5 py-2 text-[13px] text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
-        />
-        <select className="rounded-full border border-border bg-background px-3 py-2 text-[13px] text-foreground focus:border-accent focus:outline-none">
-          <option>Daily</option>
-          <option>Weekly</option>
-          <option>Monthly</option>
-        </select>
-        <button className="rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-black hover:bg-accent-soft">
-          Subscribe
+      <form className="flex flex-col gap-3 p-6">
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            Email
+          </span>
+          <input
+            type="email"
+            required
+            placeholder="you@startup.com"
+            className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-[14px] focus:outline-none focus:bg-accent/30"
+          />
+        </label>
+        <label className="block">
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            Cadence
+          </span>
+          <select className="mt-1 w-full border-2 border-ink bg-paper px-3 py-2 text-[14px] focus:outline-none focus:bg-accent/30">
+            <option>Daily — every weekday at 09:00 PT</option>
+            <option>Weekly — Saturday morning</option>
+            <option>Monthly — best of the month</option>
+          </select>
+        </label>
+        <button className="border-2 border-ink bg-ink px-3 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-accent hover:bg-accent hover:text-ink">
+          Subscribe →
         </button>
       </form>
     </div>

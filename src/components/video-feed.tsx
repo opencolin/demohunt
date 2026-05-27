@@ -24,7 +24,7 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.55) {
             const idx = Number((entry.target as HTMLElement).dataset.index);
             if (!Number.isNaN(idx)) setActiveIndex(idx);
           }
@@ -32,7 +32,7 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
       },
       {
         root,
-        threshold: [0.6, 0.9],
+        threshold: [0.55, 0.9],
       },
     );
     cardRefs.current.forEach((el) => el && observer.observe(el));
@@ -40,11 +40,14 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
   }, [demos.length]);
 
   return (
-    <div className="relative flex-1 overflow-hidden">
-      <FeedTabs current={currentTab} />
+    <section
+      className="relative flex flex-col"
+      style={{ height: "calc(100dvh - var(--site-header-h, 8rem))" }}
+    >
+      <FeedSection current={currentTab} count={demos.length} />
       <div
         ref={containerRef}
-        className="scroll-snap-y h-[calc(100vh-3.5rem)] overflow-y-auto"
+        className="scroll-snap-y flex-1 overflow-y-auto"
       >
         {demos.map((demo, i) => {
           const founder = founderMap[demo.founderSlug];
@@ -57,51 +60,84 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
                 cardRefs.current[i] = el;
               }}
             >
-              <VideoCard demo={demo} founder={founder} active={i === activeIndex} />
+              <VideoCard
+                demo={demo}
+                founder={founder}
+                active={i === activeIndex}
+                index={i}
+                total={demos.length}
+              />
             </div>
           );
         })}
-        <div className="snap-start grid h-[calc(100vh-3.5rem)] w-full place-items-center">
-          <div className="mx-auto max-w-md px-6 text-center">
-            <p className="text-sm text-muted">You're caught up.</p>
-            <p className="mt-2 text-xs text-muted/70">
-              New demos drop daily. Subscribe to the digest.
-            </p>
-            <Link
-              href="/discover"
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-[13px] font-medium text-black"
-            >
-              Browse curated lists
-            </Link>
-          </div>
+        <CaughtUpBlock />
+      </div>
+    </section>
+  );
+}
+
+function FeedSection({ current, count }: { current: string; count: number }) {
+  return (
+    <div className="border-b border-ink/30 bg-paper-elev">
+      <div className="mx-auto flex max-w-5xl flex-wrap items-end justify-between gap-3 px-5 py-3">
+        <div className="flex items-baseline gap-3">
+          <h1 className="font-display text-[26px] font-medium leading-none tracking-[-0.01em]">
+            The Feed
+          </h1>
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+            {String(count).padStart(3, "0")} demos · refreshed live
+          </span>
         </div>
+        <nav className="flex flex-wrap items-center gap-1">
+          {FEED_TABS.map((t) => {
+            const href = t.key === "for-you" ? "/" : `/?tab=${t.key}`;
+            const active = current === t.key;
+            return (
+              <Link
+                key={t.key}
+                href={href}
+                className={cn(
+                  "font-mono text-[11px] uppercase tracking-[0.18em] px-2.5 py-1 border-2 transition",
+                  active
+                    ? "border-ink bg-ink text-accent"
+                    : "border-ink/30 bg-paper hover:border-ink hover:bg-accent",
+                )}
+              >
+                [{t.label}]
+              </Link>
+            );
+          })}
+        </nav>
       </div>
     </div>
   );
 }
 
-function FeedTabs({ current }: { current: string }) {
+function CaughtUpBlock() {
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center pt-3">
-      <div className="pointer-events-auto glass flex items-center gap-1 rounded-full p-1">
-        {FEED_TABS.map((t) => {
-          const href = t.key === "for-you" ? "/" : `/?tab=${t.key}`;
-          const active = current === t.key;
-          return (
-            <Link
-              key={t.key}
-              href={href}
-              className={cn(
-                "rounded-full px-3 py-1 text-[12px] transition",
-                active
-                  ? "bg-foreground text-background"
-                  : "text-foreground/70 hover:text-foreground",
-              )}
-            >
-              {t.label}
-            </Link>
-          );
-        })}
+    <div className="snap-start mx-auto grid min-h-full w-full max-w-5xl place-items-center px-5 py-12">
+      <div className="text-center">
+        <p className="font-display text-[44px] leading-none tracking-tight">
+          That's the issue.
+        </p>
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-muted">
+          Next dispatch tomorrow at 09:00 PT
+        </p>
+        <div className="dotline mx-auto mt-6 h-px w-32" />
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link
+            href="/discover"
+            className="border-2 border-ink bg-accent px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-ink hover:text-accent"
+          >
+            Browse the archive
+          </Link>
+          <Link
+            href="/submit"
+            className="border-2 border-ink bg-paper-elev px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-accent"
+          >
+            Submit yours
+          </Link>
+        </div>
       </div>
     </div>
   );

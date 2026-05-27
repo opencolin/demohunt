@@ -6,7 +6,7 @@ import {
   MessageCircle,
   Share2,
   Mail,
-  ExternalLink,
+  ArrowUpRight,
   Eye,
   Clock,
   Volume2,
@@ -20,9 +20,11 @@ type Props = {
   demo: Demo;
   founder: Founder;
   active: boolean;
+  index: number;
+  total: number;
 };
 
-export function VideoCard({ demo, founder, active }: Props) {
+export function VideoCard({ demo, founder, active, index, total }: Props) {
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -52,141 +54,165 @@ export function VideoCard({ demo, founder, active }: Props) {
 
   const src = `https://www.youtube-nocookie.com/embed/${demo.youtubeId}?autoplay=${active ? 1 : 0}&mute=1&loop=1&playlist=${demo.youtubeId}&controls=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1`;
 
-  return (
-    <article className="snap-start relative h-[calc(100vh-3.5rem)] w-full">
-      <div className="absolute inset-0 mx-auto flex max-w-md flex-col px-3 py-4 sm:py-6">
-        <div className="relative flex-1 overflow-hidden rounded-3xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]">
-          <div className="absolute inset-0">
-            <iframe
-              ref={iframeRef}
-              src={src}
-              title={demo.title}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full"
-              loading={active ? "eager" : "lazy"}
-            />
-          </div>
+  const num = String(index + 1).padStart(3, "0");
+  const tot = String(total).padStart(3, "0");
 
-          {/* Click overlay to unmute */}
+  return (
+    <article className="snap-start min-h-full w-full py-6 sm:py-8">
+      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-x-8 gap-y-4 px-5 md:grid-cols-[1fr_auto]">
+        {/* Numbered dateline above */}
+        <div className="col-span-full mb-2 flex items-center justify-between border-y-2 border-ink py-1.5 font-mono text-[10px] uppercase tracking-[0.22em]">
+          <span>
+            No. <span className="num-tag font-semibold">{num}</span>
+            <span className="text-muted"> / {tot}</span>
+          </span>
+          <SourceBadge demo={demo} />
+          <span className="hidden sm:inline">
+            <span className="text-muted">Filed</span>{" "}
+            <span className="num-tag">{timeAgo(demo.postedAt)}</span> ago
+          </span>
+        </div>
+
+        {/* Video frame */}
+        <div className="relative aspect-video w-full overflow-hidden border-2 border-ink bg-ink cover-shadow">
+          <iframe
+            ref={iframeRef}
+            src={src}
+            title={demo.title}
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+            className="absolute inset-0 h-full w-full"
+            loading={active ? "eager" : "lazy"}
+          />
+          {/* Mute toggle overlay */}
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setMuted((m) => !m);
               setHasInteracted(true);
             }}
-            className="absolute inset-0 z-10"
+            className="absolute right-3 top-3 z-10 inline-flex items-center gap-1.5 border-2 border-ink bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] hover:bg-accent"
             aria-label={muted ? "Unmute" : "Mute"}
-          />
-
-          {/* Top gradient + meta */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 bg-gradient-to-b from-black/70 via-black/20 to-transparent px-4 pt-14 pb-4">
-            <div className="pointer-events-auto flex items-center justify-between">
-              <SourceBadge demo={demo} />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setMuted((m) => !m);
-                  setHasInteracted(true);
-                }}
-                className="rounded-full glass p-2 text-white/80 hover:text-white"
-                aria-label={muted ? "Unmute" : "Mute"}
-              >
-                {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Unmute hint */}
+          >
+            {muted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+            {muted ? "Muted" : "Sound"}
+          </button>
           {active && muted && !hasInteracted && (
-            <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-full glass px-3 py-1.5 text-[11px] text-white/80">
-              Tap to unmute
+            <div className="pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-max border-2 border-ink bg-accent px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em]">
+              Tap for sound
             </div>
           )}
+          {/* Watch dot */}
+          {active && (
+            <span className="pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 border-2 border-ink bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em]">
+              <span className="block h-1.5 w-1.5 bg-warn animate-pulse" />
+              On the air
+            </span>
+          )}
+        </div>
 
-          {/* Bottom gradient + content */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-black via-black/70 to-transparent p-4 pt-16">
-            <div className="pointer-events-auto flex items-end justify-between gap-3">
-              <div className="min-w-0 flex-1 space-y-2">
-                <Link
-                  href={`/founders/${founder.slug}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-2 group"
+        {/* Sidebar actions */}
+        <aside className="flex flex-row gap-2 md:flex-col">
+          <UpvoteButton initial={demo.upvotes} />
+          <ActionButton href={`/demo/${demo.id}`} label={formatCount(demo.comments)}>
+            <MessageCircle className="h-4 w-4" strokeWidth={2} />
+          </ActionButton>
+          <ActionButton href="#" label="Share">
+            <Share2 className="h-4 w-4" strokeWidth={2} />
+          </ActionButton>
+        </aside>
+
+        {/* Caption / article block */}
+        <div className="md:col-span-1 md:max-w-2xl">
+          <Link
+            href={`/demo/${demo.id}`}
+            className="block"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-display text-[34px] leading-[0.98] tracking-[-0.015em] sm:text-[44px]">
+              {demo.title.split(" — ")[0]}
+              {demo.title.includes(" — ") && (
+                <span className="block font-display italic font-light text-ink/85">
+                  {demo.title.split(" — ").slice(1).join(" — ")}
+                </span>
+              )}
+            </h2>
+          </Link>
+
+          <p className="mt-3 max-w-prose text-[15px] leading-[1.55] text-ink/85">
+            <span className="font-display italic">“</span>
+            {demo.tagline}
+            <span className="font-display italic">”</span>
+          </p>
+
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            <Link
+              href={`/founders/${founder.slug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-2 text-ink hover:text-ink"
+            >
+              <span className="grid h-6 w-6 place-items-center border border-ink bg-paper-elev font-display text-[10px] leading-none">
+                {founder.avatar}
+              </span>
+              <span className="tracking-[0.18em]">By {founder.name}</span>
+            </Link>
+            <span className="text-ink/40">·</span>
+            <span className="inline-flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span className="num-tag">{demo.durationSec}″</span>
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Eye className="h-3 w-3" />
+              <span className="num-tag">{formatCount(demo.views)}</span>
+            </span>
+            <span className="text-ink/40">·</span>
+            <div className="flex flex-wrap gap-1.5">
+              {demo.tags.slice(0, 3).map((t) => (
+                <span
+                  key={t}
+                  className="border border-ink bg-paper px-1.5 py-0.5 text-[9px] tracking-[0.22em]"
                 >
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-soft text-[11px] font-bold text-black">
-                    {founder.avatar}
-                  </span>
-                  <span className="text-[13px] font-medium text-white group-hover:text-accent">
-                    {founder.name}
-                  </span>
-                  <span className="text-[12px] text-white/50">@{founder.handle}</span>
-                </Link>
-
-                <Link
-                  href={`/demo/${demo.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="block"
-                >
-                  <h2 className="text-[18px] font-semibold leading-snug text-white">
-                    {demo.title}
-                  </h2>
-                </Link>
-                <p className="line-clamp-2 text-[13px] text-white/80">{demo.tagline}</p>
-
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  {demo.tags.slice(0, 3).map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[11px] text-white/70"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                  <span className="flex items-center gap-1 text-[11px] text-white/50">
-                    <Clock className="h-3 w-3" />
-                    {demo.durationSec}s
-                  </span>
-                  <span className="flex items-center gap-1 text-[11px] text-white/50">
-                    <Eye className="h-3 w-3" />
-                    {formatCount(demo.views)}
-                  </span>
-                  <span className="text-[11px] text-white/40">· {timeAgo(demo.postedAt)}</span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2 pt-2">
-                  <a
-                    href={`mailto:${founder.email}?subject=Saw your Demo Hunt pitch`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[12px] font-medium text-black hover:bg-white/90"
-                  >
-                    <Mail className="h-3.5 w-3.5" />
-                    Contact
-                  </a>
-                  {founder.links[0] && (
-                    <a
-                      href={founder.links[0].url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-[12px] text-white/85 hover:bg-white/10"
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      {founder.links[0].label}
-                    </a>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex shrink-0 flex-col items-center gap-3">
-                <UpvoteButton initial={demo.upvotes} />
-                <ActionButton href={`/demo/${demo.id}`} label={formatCount(demo.comments)}>
-                  <MessageCircle className="h-4 w-4" />
-                </ActionButton>
-                <ActionButton href="#" label="Share">
-                  <Share2 className="h-4 w-4" />
-                </ActionButton>
-              </div>
+                  {t}
+                </span>
+              ))}
             </div>
           </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <a
+              href={`mailto:${founder.email}?subject=Saw your Demo Hunt pitch`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-2 border-2 border-ink bg-ink px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-paper hover:bg-accent hover:text-ink"
+            >
+              <Mail className="h-3.5 w-3.5" />
+              Contact founder
+            </a>
+            {founder.links[0] && (
+              <a
+                href={founder.links[0].url}
+                target="_blank"
+                rel="noreferrer noopener"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-2 border-2 border-ink bg-paper px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] hover:bg-accent"
+              >
+                <ArrowUpRight className="h-3.5 w-3.5" />
+                {founder.links[0].label}
+              </a>
+            )}
+            <Link
+              href={`/demo/${demo.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-2 px-2 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-muted ink-link"
+            >
+              Read the full file →
+            </Link>
+          </div>
+        </div>
+
+        {/* Bottom rule with next demo cue */}
+        <div className="col-span-full mt-6 flex items-center justify-between gap-3 border-t border-ink/40 pt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+          <span>End of demo {num}</span>
+          <span className="hidden sm:inline">Scroll to continue ↓</span>
         </div>
       </div>
     </article>
@@ -200,19 +226,19 @@ function SourceBadge({ demo }: { demo: Demo }) {
       : demo.source === "hackathon"
         ? demo.sourceLabel ?? "Hackathon"
         : demo.source === "ai-generated"
-          ? "AI-generated"
-          : "Founder upload";
+          ? "Filed: AI-Generated"
+          : "Founder Filed";
   const isAI = demo.source === "ai-generated";
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium backdrop-blur-md",
+        "inline-flex items-center gap-1.5 border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.22em]",
         isAI
-          ? "bg-purple-500/20 text-purple-200 border border-purple-400/30"
-          : "bg-black/40 text-white/85 border border-white/15",
+          ? "border-ink bg-ink text-paper"
+          : "border-ink bg-paper-elev",
       )}
     >
-      <span className={cn("h-1.5 w-1.5 rounded-full", isAI ? "bg-purple-300" : "bg-accent")} />
+      <span className={cn("block h-1.5 w-1.5", isAI ? "bg-accent" : "bg-ink")} />
       {label}
     </span>
   );
@@ -231,10 +257,12 @@ function ActionButton({
     <Link
       href={href}
       onClick={(e) => e.stopPropagation()}
-      className="flex w-16 flex-col items-center gap-1 rounded-2xl border border-border bg-surface px-3 py-3 text-foreground transition hover:border-accent/60"
+      className="flex w-12 flex-col items-center justify-center gap-1 border-2 border-ink bg-paper-elev py-2.5 hover:bg-accent md:w-[68px]"
     >
       {children}
-      <span className="font-mono text-[11px] text-foreground/80">{label}</span>
+      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/70">
+        {label}
+      </span>
     </Link>
   );
 }
