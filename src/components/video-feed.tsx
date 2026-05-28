@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { VideoCard } from "./video-card";
+import { ViewModeSwitcher, type ViewMode } from "./view-mode-switcher";
 import type { Demo, Founder } from "@/lib/data";
 import { FEED_TABS } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -13,10 +14,26 @@ type Props = {
   currentTab: string;
 };
 
+const VIEW_MODE_KEY = "demohunt:viewMode";
+
 export function VideoFeed({ demos, founderMap, currentTab }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>("portrait");
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Load persisted view mode after mount (avoids hydration mismatch)
+  useEffect(() => {
+    const stored = localStorage.getItem(VIEW_MODE_KEY);
+    if (stored === "landscape" || stored === "portrait") {
+      setViewMode(stored);
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+  };
 
   useEffect(() => {
     const root = containerRef.current;
@@ -41,7 +58,11 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
 
   return (
     <div className="relative flex-1 overflow-hidden">
-      <FeedTabs current={currentTab} />
+      <FeedControls
+        currentTab={currentTab}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+      />
       <div
         ref={containerRef}
         className="scroll-snap-y h-[calc(100vh-3.5rem)] overflow-y-auto"
@@ -57,7 +78,12 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
                 cardRefs.current[i] = el;
               }}
             >
-              <VideoCard demo={demo} founder={founder} active={i === activeIndex} />
+              <VideoCard
+                demo={demo}
+                founder={founder}
+                active={i === activeIndex}
+                viewMode={viewMode}
+              />
             </div>
           );
         })}
@@ -80,13 +106,21 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
   );
 }
 
-function FeedTabs({ current }: { current: string }) {
+function FeedControls({
+  currentTab,
+  viewMode,
+  onViewModeChange,
+}: {
+  currentTab: string;
+  viewMode: ViewMode;
+  onViewModeChange: (m: ViewMode) => void;
+}) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex justify-center pt-3">
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-30 flex flex-wrap items-center justify-center gap-2 px-3 pt-3">
       <div className="pointer-events-auto glass flex items-center gap-1 rounded-full p-1">
         {FEED_TABS.map((t) => {
           const href = t.key === "for-you" ? "/" : `/?tab=${t.key}`;
-          const active = current === t.key;
+          const active = currentTab === t.key;
           return (
             <Link
               key={t.key}
@@ -102,6 +136,9 @@ function FeedTabs({ current }: { current: string }) {
             </Link>
           );
         })}
+      </div>
+      <div className="pointer-events-auto">
+        <ViewModeSwitcher value={viewMode} onChange={onViewModeChange} />
       </div>
     </div>
   );
