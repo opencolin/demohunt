@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Eye, Clock, MessageCircle, Mail, ExternalLink, Calendar, ArrowLeft } from "lucide-react";
 import { UpvoteButton } from "@/components/upvote-button";
+import { FollowButton } from "@/components/follow-button";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { demoById, demos, founderBySlug } from "@/lib/data";
 import { formatCount, timeAgo } from "@/lib/utils";
 
@@ -144,15 +146,37 @@ export default async function DemoPage({ params }: Props) {
                 {founder.avatar}
               </span>
               <span>
-                <span className="block text-[14px] font-medium">{founder.name}</span>
+                <span className="inline-flex items-center gap-1 text-[14px] font-medium">
+                  {founder.name}
+                  {founder.verified && <VerifiedBadge />}
+                </span>
                 <span className="block text-[11px] text-muted">@{founder.handle}</span>
               </span>
             </Link>
+            {founder.badges && founder.badges.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {founder.badges.slice(0, 3).map((b) => (
+                  <span
+                    key={b}
+                    className="rounded-full border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent"
+                  >
+                    {b}
+                  </span>
+                ))}
+              </div>
+            )}
             <p className="mt-3 text-[12px] text-muted">{founder.bio}</p>
             <div className="mt-3 space-y-2">
+              <div className="flex justify-center">
+                <FollowButton
+                  founderSlug={founder.slug}
+                  founderName={founder.name}
+                  variant="tile"
+                />
+              </div>
               <a
                 href={`mailto:${founder.email}?subject=Re: ${demo.title}`}
-                className="flex items-center justify-center gap-1.5 rounded-full bg-accent px-3 py-2 text-[12px] font-medium text-black hover:bg-accent-soft"
+                className="flex items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 py-2 text-[12px] font-medium text-foreground hover:border-accent"
               >
                 <Mail className="h-3.5 w-3.5" />
                 Contact founder

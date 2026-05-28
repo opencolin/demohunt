@@ -66,6 +66,11 @@ body {
   border: 1px solid var(--border);
 }
 
+@keyframes demo-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 @keyframes pulse-ring {
   0% { box-shadow: 0 0 0 0 rgba(255, 90, 60, 0.45); }
   70% { box-shadow: 0 0 0 12px rgba(255, 90, 60, 0); }

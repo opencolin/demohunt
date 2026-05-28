@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { MapPin, Mail, ExternalLink, Eye, ChevronUp, Clock } from "lucide-react";
 import { demosByFounder, founderBySlug } from "@/lib/data";
 import { formatCount, timeAgo } from "@/lib/utils";
+import { FollowButton } from "@/components/follow-button";
+import { VerifiedBadge } from "@/components/verified-badge";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -23,14 +25,35 @@ export default async function FounderPage({ params }: Props) {
           {founder.avatar}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{founder.name}</h1>
+          <h1 className="inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            {founder.name}
+            {founder.verified && <VerifiedBadge size="md" />}
+          </h1>
           <p className="mt-0.5 text-sm text-muted">
             @{founder.handle}
             <span className="mx-2">·</span>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3 w-3" /> {founder.location}
             </span>
+            {typeof founder.followers === "number" && (
+              <>
+                <span className="mx-2">·</span>
+                <span className="font-mono">{formatCount(founder.followers)}</span> followers
+              </>
+            )}
           </p>
+          {founder.badges && founder.badges.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {founder.badges.map((b) => (
+                <span
+                  key={b}
+                  className="rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent"
+                >
+                  {b}
+                </span>
+              ))}
+            </div>
+          )}
           <p className="mt-3 max-w-2xl text-[14px] text-foreground/90">{founder.bio}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {founder.tags.map((t) => (
@@ -42,10 +65,15 @@ export default async function FounderPage({ params }: Props) {
               </span>
             ))}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <FollowButton
+              founderSlug={founder.slug}
+              founderName={founder.name}
+              variant="tile"
+            />
             <a
               href={`mailto:${founder.email}`}
-              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-medium text-black hover:bg-accent-soft"
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3.5 py-2.5 text-[13px] font-medium text-foreground hover:border-accent"
             >
               <Mail className="h-3.5 w-3.5" />
               {founder.email}
@@ -56,7 +84,7 @@ export default async function FounderPage({ params }: Props) {
                 href={l.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-1.5 text-[13px] text-foreground hover:border-accent"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2.5 text-[13px] text-foreground hover:border-accent"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
                 {l.label}

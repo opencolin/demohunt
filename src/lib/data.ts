@@ -8,6 +8,9 @@ export type Founder = {
   email: string;
   links: { label: string; url: string }[];
   tags: string[];
+  verified?: boolean;
+  badges?: string[];
+  followers?: number;
 };
 
 export type Demo = {
@@ -71,6 +74,9 @@ export const founders: Founder[] = [
       { label: "x.com/ameliao", url: "https://x.com/ameliao" },
     ],
     tags: ["AI", "Sales", "B2B"],
+    verified: true,
+    badges: ["Ex-Stripe", "YC W26"],
+    followers: 1240,
   },
   {
     slug: "vikram-shastri",
@@ -85,6 +91,9 @@ export const founders: Founder[] = [
       { label: "github.com/vshastri", url: "https://github.com/vshastri" },
     ],
     tags: ["Devtools", "Open Source", "Agents"],
+    verified: true,
+    badges: ["YC W24", "Anthropic Builder Club"],
+    followers: 3870,
   },
   {
     slug: "jules-tan",
@@ -96,6 +105,8 @@ export const founders: Founder[] = [
     email: "jules@kidlab.co",
     links: [{ label: "kidlab.co", url: "https://kidlab.co" }],
     tags: ["Hardware", "Robotics", "Consumer"],
+    badges: ["Frontier Tower"],
+    followers: 612,
   },
   {
     slug: "noor-haddad",
@@ -107,6 +118,9 @@ export const founders: Founder[] = [
     email: "noor@vetcheck.ai",
     links: [{ label: "vetcheck.ai", url: "https://vetcheck.ai" }],
     tags: ["AI", "Bio", "Healthcare"],
+    verified: true,
+    badges: ["NYC BioBuilders", "Sequoia Scout"],
+    followers: 2104,
   },
   {
     slug: "rico-mendez",
@@ -118,6 +132,9 @@ export const founders: Founder[] = [
     email: "rico@reelforge.io",
     links: [{ label: "reelforge.io", url: "https://reelforge.io" }],
     tags: ["AI", "Video", "Infra"],
+    verified: true,
+    badges: ["Cerebral Valley", "a16z Speedrun"],
+    followers: 5980,
   },
   {
     slug: "priya-iyer",
@@ -129,6 +146,8 @@ export const founders: Founder[] = [
     email: "priya@carbonledger.earth",
     links: [{ label: "carbonledger.earth", url: "https://carbonledger.earth" }],
     tags: ["Climate", "Fintech"],
+    badges: ["Lightspeed India", "Climate Demo Day"],
+    followers: 421,
   },
   {
     slug: "miles-osei",
@@ -140,6 +159,9 @@ export const founders: Founder[] = [
     email: "miles@dialpie.com",
     links: [{ label: "dialpie.com", url: "https://dialpie.com" }],
     tags: ["AI", "Voice", "SMB"],
+    verified: true,
+    badges: ["Capital Factory", "YC W25"],
+    followers: 1837,
   },
   {
     slug: "lena-park",
@@ -151,6 +173,9 @@ export const founders: Founder[] = [
     email: "lena@sentry-agent.dev",
     links: [{ label: "sentry-agent.dev", url: "https://sentry-agent.dev" }],
     tags: ["Devtools", "Agents"],
+    verified: true,
+    badges: ["Seoul Builders", "Anthropic Builder Club"],
+    followers: 4290,
   },
 ];
 
@@ -474,6 +499,44 @@ export const demoDays: DemoDay[] = [
     demoCount: 11,
   },
 ];
+
+export type SearchResults = {
+  query: string;
+  demos: Demo[];
+  founders: Founder[];
+  total: number;
+};
+
+export function search(q: string): SearchResults {
+  const query = q.trim();
+  if (!query) return { query, demos: [], founders: [], total: 0 };
+  const needle = query.toLowerCase();
+  const matchedFounders = founders.filter(
+    (f) =>
+      f.name.toLowerCase().includes(needle) ||
+      f.handle.toLowerCase().includes(needle) ||
+      f.bio.toLowerCase().includes(needle) ||
+      f.tags.some((t) => t.toLowerCase().includes(needle)) ||
+      f.badges?.some((b) => b.toLowerCase().includes(needle)),
+  );
+  const matchedFounderSlugs = new Set(matchedFounders.map((f) => f.slug));
+  const matchedDemos = demos.filter(
+    (d) =>
+      d.title.toLowerCase().includes(needle) ||
+      d.tagline.toLowerCase().includes(needle) ||
+      d.description.toLowerCase().includes(needle) ||
+      d.tags.some((t) => t.toLowerCase().includes(needle)) ||
+      d.category.toLowerCase().includes(needle) ||
+      d.sourceLabel?.toLowerCase().includes(needle) ||
+      matchedFounderSlugs.has(d.founderSlug),
+  );
+  return {
+    query,
+    demos: matchedDemos,
+    founders: matchedFounders,
+    total: matchedDemos.length + matchedFounders.length,
+  };
+}
 
 export const founderBySlug = (slug: string) =>
   founders.find((f) => f.slug === slug);

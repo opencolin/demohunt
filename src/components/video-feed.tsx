@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { VideoCard } from "./video-card";
 import { ViewModeSwitcher, type ViewMode } from "./view-mode-switcher";
 import type { Demo, Founder } from "@/lib/data";
@@ -22,7 +23,6 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Load persisted view mode after mount (avoids hydration mismatch)
   useEffect(() => {
     const stored = localStorage.getItem(VIEW_MODE_KEY);
     if (stored === "landscape" || stored === "portrait") {
@@ -55,6 +55,32 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
     cardRefs.current.forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
   }, [demos.length]);
+
+  // Keyboard nav: J/K and arrow keys
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (document.activeElement?.tagName ?? "").toUpperCase();
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key === "ArrowDown" || e.key === "j" || e.key === "J") {
+        e.preventDefault();
+        scrollTo(activeIndex + 1);
+      }
+      if (e.key === "ArrowUp" || e.key === "k" || e.key === "K") {
+        e.preventDefault();
+        scrollTo(activeIndex - 1);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  });
+
+  const scrollTo = (idx: number) => {
+    const target = cardRefs.current[Math.max(0, Math.min(demos.length - 1, idx))];
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const atTop = activeIndex === 0;
+  const atBottom = activeIndex === demos.length - 1;
 
   return (
     <div className="relative flex-1 overflow-hidden">
@@ -102,7 +128,55 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Up/down nav arrows — desktop only */}
+      <div className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 flex-col gap-2 md:flex">
+        <NavArrow
+          direction="up"
+          disabled={atTop}
+          onClick={() => scrollTo(activeIndex - 1)}
+        />
+        <NavArrow
+          direction="down"
+          disabled={atBottom}
+          onClick={() => scrollTo(activeIndex + 1)}
+        />
+        <div className="mt-1 text-center font-mono text-[10px] text-muted">
+          {String(activeIndex + 1).padStart(2, "0")}
+          <span className="text-muted/50">/{demos.length}</span>
+        </div>
+      </div>
     </div>
+  );
+}
+
+function NavArrow({
+  direction,
+  disabled,
+  onClick,
+}: {
+  direction: "up" | "down";
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={direction === "up" ? "Previous demo" : "Next demo"}
+      className={cn(
+        "pointer-events-auto inline-flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface/85 text-foreground/85 backdrop-blur-md transition",
+        disabled
+          ? "cursor-not-allowed opacity-30"
+          : "hover:border-accent hover:bg-accent hover:text-black active:scale-95",
+      )}
+    >
+      {direction === "up" ? (
+        <ArrowUp className="h-5 w-5" strokeWidth={2.2} />
+      ) : (
+        <ArrowDown className="h-5 w-5" strokeWidth={2.2} />
+      )}
+    </button>
   );
 }
 

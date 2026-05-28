@@ -28,29 +28,35 @@ export function UpvoteButton({ initial, size = "lg" }: Props) {
     <button
       onClick={onClick}
       className={cn(
-        "group flex flex-col items-center gap-1 rounded-2xl border transition active:scale-95",
-        large ? "px-3 py-3 w-16" : "px-2 py-2 w-12",
+        "group flex flex-col items-center justify-center gap-0.5 rounded-2xl border transition active:scale-95",
+        large ? "w-[68px] px-2 py-3" : "w-12 px-1.5 py-2",
         voted
           ? "border-accent bg-accent text-black"
-          : "border-border bg-surface text-foreground hover:border-accent/60",
+          : "border-border bg-surface/80 text-foreground backdrop-blur-md hover:border-accent/60",
       )}
       aria-pressed={voted}
+      aria-label={voted ? "Remove vote" : "Upvote"}
     >
       <ChevronUp
         className={cn(
-          large ? "h-5 w-5" : "h-4 w-4",
+          large ? "h-6 w-6" : "h-4 w-4",
           "transition-transform group-active:-translate-y-0.5",
         )}
-        strokeWidth={2.5}
+        strokeWidth={2.4}
       />
       <span
         className={cn(
           "font-mono tabular-nums",
-          large ? "text-[13px]" : "text-[11px]",
+          large ? "text-[13px] font-semibold" : "text-[11px]",
         )}
       >
         {formatCount(count)}
       </span>
+      {large && (
+        <span className="font-mono text-[10px] uppercase tracking-wider opacity-70">
+          {voted ? "Voted" : "Vote"}
+        </span>
+      )}
     </button>
   );
 }
