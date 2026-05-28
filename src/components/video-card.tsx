@@ -134,13 +134,13 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
 
   if (viewMode === "landscape") {
     return (
-      <article className="snap-start relative h-[calc(100vh-3.5rem)] w-full bg-black">
+      <article className="snap-start relative h-[calc(100vh-var(--header-h))] w-full bg-black">
         {/* Video — 16:9, as large as possible */}
         <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
           <div
             className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]"
             style={{
-              width: "min(100%, calc((100vh - 3.5rem - 2rem) * 16 / 9))",
+              width: "min(100%, calc((100vh - var(--header-h) - 2rem) * 16 / 9))",
             }}
           >
             {player}
@@ -246,7 +246,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
 
   // Portrait
   return (
-    <article className="snap-start relative h-[calc(100vh-3.5rem)] w-full">
+    <article className="snap-start relative h-[calc(100vh-var(--header-h))] w-full">
       <div className="absolute inset-0 mx-auto flex max-w-md flex-col px-3 py-4 sm:py-6">
         <div className="relative flex-1 overflow-hidden rounded-3xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]">
           <div className="absolute inset-0">{player}</div>

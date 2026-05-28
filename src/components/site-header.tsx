@@ -5,7 +5,7 @@ import { SearchBar } from "./search-bar";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 glass">
+    <header className="sticky top-0 z-50 glass compact-hide">
       <div className="mx-auto flex h-14 max-w-[1920px] items-center gap-3 px-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 group">
           <span className="relative inline-flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-black">

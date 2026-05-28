@@ -42,7 +42,7 @@ export function SiteSidebar() {
   };
 
   return (
-    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-44 shrink-0 overflow-y-auto border-r border-border bg-background/60 py-3 md:flex md:flex-col">
+    <aside className="compact-hide sticky top-[var(--header-h)] hidden h-[calc(100vh-var(--header-h))] w-44 shrink-0 overflow-y-auto border-r border-border bg-background/60 py-3 md:flex md:flex-col">
       <nav className="space-y-0.5 px-2">
         {PRIMARY.map((item) => {
           const active = isActive(item);

@@ -91,7 +91,7 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
       />
       <div
         ref={containerRef}
-        className="scroll-snap-y h-[calc(100vh-3.5rem)] overflow-y-auto"
+        className="scroll-snap-y h-[calc(100vh-var(--header-h))] overflow-y-auto"
       >
         {demos.map((demo, i) => {
           const founder = founderMap[demo.founderSlug];
@@ -114,7 +114,7 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
             </div>
           );
         })}
-        <div className="snap-start grid h-[calc(100vh-3.5rem)] w-full place-items-center">
+        <div className="snap-start grid h-[calc(100vh-var(--header-h))] w-full place-items-center">
           <div className="mx-auto max-w-md px-6 text-center">
             <p className="text-sm text-muted">You're caught up.</p>
             <p className="mt-2 text-xs text-muted/70">

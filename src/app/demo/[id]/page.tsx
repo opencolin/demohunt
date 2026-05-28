@@ -24,7 +24,7 @@ export default async function DemoPage({ params }: Props) {
     <main className="mx-auto w-full max-w-6xl px-4 py-6">
       <Link
         href="/"
-        className="inline-flex items-center gap-1 text-[12px] text-muted hover:text-foreground"
+        className="compact-hide inline-flex items-center gap-1 text-[12px] text-muted hover:text-foreground"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Back to feed
