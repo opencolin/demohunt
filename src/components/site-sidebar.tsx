@@ -42,8 +42,8 @@ export function SiteSidebar() {
   };
 
   return (
-    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-60 shrink-0 overflow-y-auto border-r border-border bg-background/60 py-4 md:flex md:flex-col">
-      <nav className="space-y-1 px-3">
+    <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-44 shrink-0 overflow-y-auto border-r border-border bg-background/60 py-3 md:flex md:flex-col">
+      <nav className="space-y-0.5 px-2">
         {PRIMARY.map((item) => {
           const active = isActive(item);
           return (
@@ -51,7 +51,7 @@ export function SiteSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] transition",
+                "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition",
                 active
                   ? "bg-surface text-foreground font-medium"
                   : "text-foreground/80 hover:bg-surface hover:text-foreground",
@@ -59,7 +59,7 @@ export function SiteSidebar() {
             >
               <span
                 className={cn(
-                  "inline-flex h-6 w-6 items-center justify-center",
+                  "inline-flex h-4 w-4 items-center justify-center",
                   active ? "text-accent" : "text-foreground/70",
                 )}
               >
@@ -71,19 +71,19 @@ export function SiteSidebar() {
         })}
       </nav>
 
-      <div className="my-4 mx-3 border-t border-border" />
+      <div className="mx-2 my-3 border-t border-border" />
 
-      <div className="px-5 pb-2 text-[10px] uppercase tracking-[0.18em] text-muted">
+      <div className="px-3 pb-1.5 text-[10px] uppercase tracking-[0.18em] text-muted">
         Explore
       </div>
-      <nav className="space-y-0.5 px-3">
+      <nav className="space-y-0.5 px-2">
         {SECONDARY.map((item) => (
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] text-foreground/75 transition hover:bg-surface hover:text-foreground"
+            className="flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[12px] text-foreground/75 transition hover:bg-surface hover:text-foreground"
           >
-            <span className="inline-flex h-5 w-5 items-center justify-center text-foreground/60">
+            <span className="inline-flex h-4 w-4 items-center justify-center text-foreground/60">
               {item.icon}
             </span>
             {item.label}
@@ -91,11 +91,11 @@ export function SiteSidebar() {
         ))}
       </nav>
 
-      <div className="mt-auto px-5 pb-2 pt-6 text-[10px] uppercase tracking-[0.18em] text-muted">
+      <div className="mt-auto px-3 pb-1.5 pt-5 text-[10px] uppercase tracking-[0.18em] text-muted">
         About
       </div>
-      <div className="px-5 pb-6 text-[11px] leading-relaxed text-muted">
-        Demo Hunt is a daily dispatch of startup pitches. Submit yours in 15-30 seconds.
+      <div className="px-3 pb-4 text-[11px] leading-relaxed text-muted">
+        Daily dispatch of startup pitches. Submit yours in 15-30 seconds.
       </div>
     </aside>
   );
