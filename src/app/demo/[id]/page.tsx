@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Eye, Clock, MessageCircle, Mail, ExternalLink, Calendar, ArrowLeft } from "lucide-react";
+import { Eye, Clock, MessageCircle, Mail, ExternalLink, Calendar, ArrowLeft, Code2 } from "lucide-react";
 import { UpvoteButton } from "@/components/upvote-button";
 import { FollowButton } from "@/components/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { demoById, demos, founderBySlug } from "@/lib/data";
-import { formatCount, timeAgo, thumbnailFor, embedUrlFor } from "@/lib/utils";
+import { formatCount, timeAgo, thumbnailFor, embedUrlFor, videoSrcFor } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -34,13 +34,25 @@ export default async function DemoPage({ params }: Props) {
         <article>
           <div className="overflow-hidden rounded-3xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]">
             <div className="relative aspect-video w-full">
-              <iframe
-                src={embedUrlFor(demo.videoProvider, demo.videoId, { autoplay: true, muted: true, loop: false })}
-                className="absolute inset-0 h-full w-full"
-                title={demo.title}
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-              />
+              {demo.videoProvider === "mp4" ? (
+                <video
+                  src={videoSrcFor(demo.videoProvider, demo.videoId)}
+                  poster={thumbnailFor(demo)}
+                  controls
+                  autoPlay
+                  muted
+                  playsInline
+                  className="absolute inset-0 h-full w-full object-contain bg-black"
+                />
+              ) : (
+                <iframe
+                  src={embedUrlFor(demo.videoProvider, demo.videoId, { autoplay: true, muted: true, loop: false })}
+                  className="absolute inset-0 h-full w-full"
+                  title={demo.title}
+                  allow="autoplay; encrypted-media; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
             </div>
           </div>
 
@@ -174,6 +186,17 @@ export default async function DemoPage({ params }: Props) {
                   variant="tile"
                 />
               </div>
+              {demo.repoUrl && (
+                <a
+                  href={demo.repoUrl}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 py-2 text-[12px] font-medium text-foreground hover:border-accent"
+                >
+                  <Code2 className="h-3.5 w-3.5" />
+                  Source code
+                </a>
+              )}
               <a
                 href={`mailto:${founder.email}?subject=Re: ${demo.title}`}
                 className="flex items-center justify-center gap-1.5 rounded-full border border-border bg-background px-3 py-2 text-[12px] font-medium text-foreground hover:border-accent"

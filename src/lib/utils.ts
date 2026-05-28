@@ -11,7 +11,22 @@ export function thumbnailFor(demo: Pick<Demo, "videoProvider" | "videoId" | "thu
   if (demo.videoProvider === "youtube") {
     return `https://i.ytimg.com/vi/${demo.videoId}/mqdefault.jpg`;
   }
-  return `https://cdn.loom.com/sessions/thumbnails/${demo.videoId}-with-play.gif`;
+  if (demo.videoProvider === "loom") {
+    return `https://cdn.loom.com/sessions/thumbnails/${demo.videoId}-with-play.gif`;
+  }
+  // mp4 — Mux serves a thumbnail at this path
+  return `https://image.mux.com/${demo.videoId}/thumbnail.jpg?time=2`;
+}
+
+export function videoSrcFor(
+  provider: VideoProvider,
+  videoId: string,
+): string {
+  if (provider === "mp4") {
+    return `https://stream.mux.com/${videoId}/high.mp4`;
+  }
+  // Fallback to embed URL — shouldn't be called for youtube/loom
+  return embedUrlFor(provider, videoId, { autoplay: false });
 }
 
 export function embedUrlFor(
@@ -34,16 +49,20 @@ export function embedUrlFor(
     });
     return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
   }
-  const params = new URLSearchParams({
-    autoplay: autoplay ? "1" : "0",
-    muted: muted ? "true" : "false",
-    hide_owner: "true",
-    hide_share: "true",
-    hide_title: "true",
-    hideEmbedTopBar: "true",
-  });
-  if (loop) params.set("loop", "true");
-  return `https://www.loom.com/embed/${videoId}?${params.toString()}`;
+  if (provider === "loom") {
+    const params = new URLSearchParams({
+      autoplay: autoplay ? "1" : "0",
+      muted: muted ? "true" : "false",
+      hide_owner: "true",
+      hide_share: "true",
+      hide_title: "true",
+      hideEmbedTopBar: "true",
+    });
+    if (loop) params.set("loop", "true");
+    return `https://www.loom.com/embed/${videoId}?${params.toString()}`;
+  }
+  // mp4 — return the direct video URL (used by <video> element, not <iframe>)
+  return videoSrcFor(provider, videoId);
 }
 
 export function formatCount(n: number): string {

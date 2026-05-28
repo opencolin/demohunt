@@ -18,7 +18,7 @@ import { VideoProgress } from "./video-progress";
 import { VerifiedBadge, TrustChip } from "./verified-badge";
 import type { ViewMode } from "./view-mode-switcher";
 import type { Demo, Founder } from "@/lib/data";
-import { cn, formatCount, timeAgo, embedUrlFor, thumbnailFor } from "@/lib/utils";
+import { cn, formatCount, timeAgo, embedUrlFor, thumbnailFor, videoSrcFor } from "@/lib/utils";
 
 type Props = {
   demo: Demo;
@@ -31,10 +31,19 @@ type Props = {
 export function VideoCard({ demo, founder, active, nearActive = false, viewMode }: Props) {
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const isMp4 = demo.videoProvider === "mp4";
 
-  // YouTube responds to postMessage commands; Loom doesn't, so we just re-key the iframe
+  // YouTube responds to postMessage; mp4 uses HTMLVideoElement; Loom just re-keys.
   useEffect(() => {
+    if (isMp4) {
+      const v = videoRef.current;
+      if (!v) return;
+      if (active) v.play().catch(() => {});
+      else v.pause();
+      return;
+    }
     if (demo.videoProvider !== "youtube") return;
     const ifr = iframeRef.current;
     if (!ifr) return;
@@ -43,9 +52,15 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
       JSON.stringify({ event: "command", func: cmd, args: [] }),
       "*",
     );
-  }, [active, demo.videoProvider]);
+  }, [active, demo.videoProvider, isMp4]);
 
   useEffect(() => {
+    if (isMp4) {
+      const v = videoRef.current;
+      if (!v) return;
+      v.muted = muted;
+      return;
+    }
     if (demo.videoProvider !== "youtube") return;
     const ifr = iframeRef.current;
     if (!ifr) return;
@@ -57,7 +72,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
       }),
       "*",
     );
-  }, [muted, demo.videoProvider]);
+  }, [muted, demo.videoProvider, isMp4]);
 
   const shouldRenderIframe = active || nearActive;
   const src = embedUrlFor(demo.videoProvider, demo.videoId, {
@@ -72,7 +87,27 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
     setHasInteracted(true);
   };
 
-  const iframe = shouldRenderIframe ? (
+  const player = !shouldRenderIframe ? (
+    <img
+      src={thumbnailFor(demo)}
+      alt={demo.title}
+      className="absolute inset-0 h-full w-full object-cover opacity-90"
+      loading="lazy"
+    />
+  ) : isMp4 ? (
+    <video
+      ref={videoRef}
+      key={demo.id}
+      src={videoSrcFor(demo.videoProvider, demo.videoId)}
+      poster={thumbnailFor(demo)}
+      autoPlay={active}
+      muted={muted}
+      loop
+      playsInline
+      preload={active ? "auto" : "metadata"}
+      className="absolute inset-0 h-full w-full object-contain bg-black"
+    />
+  ) : (
     <iframe
       ref={iframeRef}
       key={demo.videoProvider === "loom" ? `${demo.id}-${active ? "a" : "p"}` : demo.id}
@@ -82,13 +117,6 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
       allowFullScreen
       className="absolute inset-0 h-full w-full"
       loading={active ? "eager" : "lazy"}
-    />
-  ) : (
-    <img
-      src={thumbnailFor(demo)}
-      alt={demo.title}
-      className="absolute inset-0 h-full w-full object-cover opacity-90"
-      loading="lazy"
     />
   );
 
@@ -115,7 +143,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
               width: "min(100%, calc((100vh - 3.5rem - 2rem) * 16 / 9))",
             }}
           >
-            {iframe}
+            {player}
             <button
               onClick={() => onMuteToggle()}
               className="absolute inset-0 z-10"
@@ -221,7 +249,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
     <article className="snap-start relative h-[calc(100vh-3.5rem)] w-full">
       <div className="absolute inset-0 mx-auto flex max-w-md flex-col px-3 py-4 sm:py-6">
         <div className="relative flex-1 overflow-hidden rounded-3xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]">
-          <div className="absolute inset-0">{iframe}</div>
+          <div className="absolute inset-0">{player}</div>
 
           {/* Click overlay to unmute */}
           <button
