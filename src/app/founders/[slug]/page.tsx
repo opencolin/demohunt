@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Mail, ExternalLink, Eye, ChevronUp, Clock } from "lucide-react";
 import { demosByFounder, founderBySlug } from "@/lib/data";
-import { formatCount, timeAgo } from "@/lib/utils";
+import { formatCount, timeAgo, thumbnailFor } from "@/lib/utils";
 import { FollowButton } from "@/components/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 
@@ -110,7 +110,7 @@ export default async function FounderPage({ params }: Props) {
             >
               <div className="relative aspect-video overflow-hidden rounded-lg border border-border bg-black">
                 <img
-                  src={`https://i.ytimg.com/vi/${d.youtubeId}/mqdefault.jpg`}
+                  src={thumbnailFor(d)}
                   alt=""
                   className="h-full w-full object-cover opacity-90 transition group-hover:scale-105 group-hover:opacity-100"
                 />

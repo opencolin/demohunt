@@ -108,6 +108,7 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
                 demo={demo}
                 founder={founder}
                 active={i === activeIndex}
+                nearActive={Math.abs(i - activeIndex) <= 1}
                 viewMode={viewMode}
               />
             </div>

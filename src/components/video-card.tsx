@@ -18,21 +18,24 @@ import { VideoProgress } from "./video-progress";
 import { VerifiedBadge, TrustChip } from "./verified-badge";
 import type { ViewMode } from "./view-mode-switcher";
 import type { Demo, Founder } from "@/lib/data";
-import { cn, formatCount, timeAgo } from "@/lib/utils";
+import { cn, formatCount, timeAgo, embedUrlFor, thumbnailFor } from "@/lib/utils";
 
 type Props = {
   demo: Demo;
   founder: Founder;
   active: boolean;
+  nearActive?: boolean;
   viewMode: ViewMode;
 };
 
-export function VideoCard({ demo, founder, active, viewMode }: Props) {
+export function VideoCard({ demo, founder, active, nearActive = false, viewMode }: Props) {
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
 
+  // YouTube responds to postMessage commands; Loom doesn't, so we just re-key the iframe
   useEffect(() => {
+    if (demo.videoProvider !== "youtube") return;
     const ifr = iframeRef.current;
     if (!ifr) return;
     const cmd = active ? "playVideo" : "pauseVideo";
@@ -40,9 +43,10 @@ export function VideoCard({ demo, founder, active, viewMode }: Props) {
       JSON.stringify({ event: "command", func: cmd, args: [] }),
       "*",
     );
-  }, [active]);
+  }, [active, demo.videoProvider]);
 
   useEffect(() => {
+    if (demo.videoProvider !== "youtube") return;
     const ifr = iframeRef.current;
     if (!ifr) return;
     ifr.contentWindow?.postMessage(
@@ -53,9 +57,14 @@ export function VideoCard({ demo, founder, active, viewMode }: Props) {
       }),
       "*",
     );
-  }, [muted]);
+  }, [muted, demo.videoProvider]);
 
-  const src = `https://www.youtube-nocookie.com/embed/${demo.youtubeId}?autoplay=${active ? 1 : 0}&mute=1&loop=1&playlist=${demo.youtubeId}&controls=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1`;
+  const shouldRenderIframe = active || nearActive;
+  const src = embedUrlFor(demo.videoProvider, demo.videoId, {
+    autoplay: active,
+    muted,
+    loop: true,
+  });
 
   const onMuteToggle = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -63,15 +72,23 @@ export function VideoCard({ demo, founder, active, viewMode }: Props) {
     setHasInteracted(true);
   };
 
-  const iframe = (
+  const iframe = shouldRenderIframe ? (
     <iframe
       ref={iframeRef}
+      key={demo.videoProvider === "loom" ? `${demo.id}-${active ? "a" : "p"}` : demo.id}
       src={src}
       title={demo.title}
       allow="autoplay; encrypted-media; picture-in-picture"
       allowFullScreen
       className="absolute inset-0 h-full w-full"
       loading={active ? "eager" : "lazy"}
+    />
+  ) : (
+    <img
+      src={thumbnailFor(demo)}
+      alt={demo.title}
+      className="absolute inset-0 h-full w-full object-cover opacity-90"
+      loading="lazy"
     />
   );
 

@@ -5,7 +5,7 @@ import { UpvoteButton } from "@/components/upvote-button";
 import { FollowButton } from "@/components/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { demoById, demos, founderBySlug } from "@/lib/data";
-import { formatCount, timeAgo } from "@/lib/utils";
+import { formatCount, timeAgo, thumbnailFor, embedUrlFor } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -35,7 +35,7 @@ export default async function DemoPage({ params }: Props) {
           <div className="overflow-hidden rounded-3xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]">
             <div className="relative aspect-video w-full">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${demo.youtubeId}?autoplay=1&modestbranding=1&rel=0`}
+                src={embedUrlFor(demo.videoProvider, demo.videoId, { autoplay: true, muted: true, loop: false })}
                 className="absolute inset-0 h-full w-full"
                 title={demo.title}
                 allow="autoplay; encrypted-media; picture-in-picture"
@@ -207,7 +207,7 @@ export default async function DemoPage({ params }: Props) {
                   >
                     <div className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-md border border-border bg-black">
                       <img
-                        src={`https://i.ytimg.com/vi/${r.youtubeId}/mqdefault.jpg`}
+                        src={thumbnailFor(r)}
                         alt=""
                         className="h-full w-full object-cover opacity-90"
                       />

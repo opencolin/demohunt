@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Eye, Clock, ChevronUp, Search as SearchIcon, MapPin } from "lucide-react";
 import { search, founderBySlug } from "@/lib/data";
-import { formatCount, timeAgo } from "@/lib/utils";
+import { formatCount, timeAgo, thumbnailFor } from "@/lib/utils";
 import { VerifiedBadge } from "@/components/verified-badge";
 
 type Props = {
@@ -94,7 +94,7 @@ export default async function SearchPage({ searchParams }: Props) {
                   <Link href={`/demo/${d.id}`} className="flex items-center gap-4 p-3">
                     <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-md border border-border bg-black">
                       <img
-                        src={`https://i.ytimg.com/vi/${d.youtubeId}/mqdefault.jpg`}
+                        src={thumbnailFor(d)}
                         alt=""
                         className="h-full w-full object-cover opacity-90"
                       />

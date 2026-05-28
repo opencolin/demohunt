@@ -1,8 +1,49 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { Demo, VideoProvider } from "./data";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function thumbnailFor(demo: Pick<Demo, "videoProvider" | "videoId" | "thumbnailUrl">) {
+  if (demo.thumbnailUrl) return demo.thumbnailUrl;
+  if (demo.videoProvider === "youtube") {
+    return `https://i.ytimg.com/vi/${demo.videoId}/mqdefault.jpg`;
+  }
+  return `https://cdn.loom.com/sessions/thumbnails/${demo.videoId}-with-play.gif`;
+}
+
+export function embedUrlFor(
+  provider: VideoProvider,
+  videoId: string,
+  opts: { autoplay: boolean; muted?: boolean; loop?: boolean } = { autoplay: false },
+): string {
+  const { autoplay, muted = true, loop = true } = opts;
+  if (provider === "youtube") {
+    const params = new URLSearchParams({
+      autoplay: autoplay ? "1" : "0",
+      mute: muted ? "1" : "0",
+      loop: loop ? "1" : "0",
+      playlist: videoId,
+      controls: "0",
+      modestbranding: "1",
+      playsinline: "1",
+      rel: "0",
+      enablejsapi: "1",
+    });
+    return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+  }
+  const params = new URLSearchParams({
+    autoplay: autoplay ? "1" : "0",
+    muted: muted ? "true" : "false",
+    hide_owner: "true",
+    hide_share: "true",
+    hide_title: "true",
+    hideEmbedTopBar: "true",
+  });
+  if (loop) params.set("loop", "true");
+  return `https://www.loom.com/embed/${videoId}?${params.toString()}`;
 }
 
 export function formatCount(n: number): string {

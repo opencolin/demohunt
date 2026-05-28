@@ -5,7 +5,7 @@ import {
   founderBySlug,
   type Demo,
 } from "@/lib/data";
-import { formatCount, timeAgo } from "@/lib/utils";
+import { formatCount, timeAgo, thumbnailFor } from "@/lib/utils";
 
 const lists: { key: string; title: string; subtitle: string; filter: (d: Demo) => boolean; icon: React.ReactNode; accent: string }[] = [
   {
@@ -100,7 +100,7 @@ function DemoRow({ demo, rank }: { demo: Demo; rank: number }) {
         className="relative aspect-video w-24 shrink-0 overflow-hidden rounded-md border border-border bg-black"
       >
         <img
-          src={`https://i.ytimg.com/vi/${demo.youtubeId}/mqdefault.jpg`}
+          src={thumbnailFor(demo)}
           alt=""
           className="h-full w-full object-cover opacity-90"
         />
