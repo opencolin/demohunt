@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Play, Upload, Bell } from "lucide-react";
+import { Play, Upload, Bell, LogIn } from "lucide-react";
 import { SearchBar } from "./search-bar";
 
 export function SiteHeader() {
@@ -31,6 +31,13 @@ export function SiteHeader() {
           >
             <Bell className="h-4 w-4" />
           </button>
+          <a
+            href="/api/auth/sign-in"
+            className="hidden items-center gap-1.5 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-[13px] font-medium text-foreground/80 transition hover:text-foreground sm:inline-flex"
+          >
+            <LogIn className="h-3.5 w-3.5" />
+            <span>Sign in</span>
+          </a>
           <Link
             href="/submit"
             className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[13px] font-medium text-black transition hover:bg-accent-soft"

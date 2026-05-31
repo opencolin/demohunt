@@ -146,7 +146,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
 
   const actionRail = (
     <>
-      <UpvoteButton initial={demo.upvotes} />
+      <UpvoteButton initial={demo.upvotes} demoId={demo.id} />
       <ActionButton href={`/demo/${demo.id}`} label="Comments" count={formatCount(demo.comments)}>
         <MessageCircle className="h-5 w-5" strokeWidth={2.2} />
       </ActionButton>
