@@ -1,339 +1,155 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  CheckCircle2,
-  Mic,
-  Video,
-  Sparkles,
-  Loader2,
-  Share2,
-  ArrowLeft,
-} from "lucide-react";
 
-type SubmitResult = {
-  title: string;
-  thumbnail_url: string;
-  tagline: string;
-};
+function SubmitForm() {
+  const searchParams = useSearchParams();
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({
+    title: "",
+    url: "",
+    tagline: "",
+    category: "",
+    author: "",
+  });
 
-export default function SubmitPage() {
-  const [url, setUrl] = useState("");
-  const [tagline, setTagline] = useState("");
-  const [founderName, setFounderName] = useState("");
-  const [founderHandle, setFounderHandle] = useState("");
+  // Prefill from share-target / query params on mount (e.g. a YouTube
+  // share-sheet hitting /submit?url=...&text=...&title=...).
+  useEffect(() => {
+    const url = searchParams.get("url") ?? "";
+    const text = searchParams.get("text") ?? "";
+    const title = searchParams.get("title") ?? "";
+    if (!url && !text && !title) return;
+    setForm((f) => ({
+      ...f,
+      title: title || f.title,
+      url: url || f.url,
+      tagline: text || f.tagline,
+    }));
+  }, [searchParams]);
 
-  const [status, setStatus] = useState<"idle" | "submitting">("idle");
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<SubmitResult | null>(null);
+  function update(field: string, value: string) {
+    setForm((f) => ({ ...f, [field]: value }));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (status === "submitting") return;
-    setError(null);
-    setStatus("submitting");
-
-    try {
-      const res = await fetch("/api/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url,
-          founder_name: founderName,
-          founder_handle: founderHandle,
-          tagline,
-        }),
-      });
-
-      const data = (await res.json().catch(() => null)) as
-        | (SubmitResult & { ok?: boolean; error?: string })
-        | null;
-
-      if (!res.ok || !data?.ok) {
-        setError(data?.error ?? "Something went wrong. Please try again.");
-        setStatus("idle");
-        return;
-      }
-
-      setResult({
-        title: data.title,
-        thumbnail_url: data.thumbnail_url,
-        tagline: data.tagline,
-      });
-      setStatus("idle");
-    } catch {
-      setError("Network error. Check your connection and try again.");
-      setStatus("idle");
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    if (res.ok) {
+      setSubmitted(true);
     }
   }
 
-  if (result) {
-    return <ThanksScreen result={result} />;
+  if (submitted) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <div className="text-5xl mb-4">🎉</div>
+        <h1 className="text-2xl font-bold mb-2">Submitted!</h1>
+        <p className="text-neutral-400 mb-6">
+          Thanks for adding to Demo Hunt. We&apos;ll review it shortly.
+        </p>
+        <Link href="/" className="text-[#ff5a3c] hover:underline">
+          ← Back to the feed
+        </Link>
+      </main>
+    );
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8">
-      <header className="mb-8">
-        <p className="text-[12px] uppercase tracking-[0.18em] text-accent">Submit</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-          Post your demo
-        </h1>
-        <p className="mt-2 max-w-xl text-sm text-muted">
-          15 to 30 seconds. No slides. Show the product, say one true thing, give
-          us a way to reach you. We&apos;ll handle the rest.
-        </p>
-      </header>
-
-      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <PathCard
-          icon={<Video className="h-4 w-4" />}
-          title="I have a video"
-          body="Upload it or paste a YouTube link. Live in 30s."
-        />
-        <PathCard
-          icon={<Mic className="h-4 w-4" />}
-          title="I have a pitch"
-          body="Paste your script. We'll coach the cuts before you record."
-          accent
-        />
-        <PathCard
-          icon={<Sparkles className="h-4 w-4" />}
-          title="Book the studio"
-          body="Walk into our SF studio. 30-min slot, 1 take, polished cut."
-        />
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5 rounded-3xl border border-border bg-surface p-6"
+    <main className="mx-auto max-w-2xl px-4 py-10">
+      <Link
+        href="/"
+        className="text-sm text-neutral-400 hover:text-white mb-6 inline-block"
       >
-        <Field
-          label="YouTube link"
-          hint="Paste a youtube.com or youtu.be URL. We'll pull the title and thumbnail."
-          placeholder="https://youtube.com/watch?v=…"
-          value={url}
-          onChange={setUrl}
-          required
-          autoFocus
-        />
-        <Field
-          label="Tagline"
-          hint="The one true sentence."
-          placeholder="Customer hangs up happy. Owner gets a CSV in the morning."
-          value={tagline}
-          onChange={setTagline}
-        />
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          <Field
-            label="Founder name"
-            hint="Who's behind this."
-            placeholder="Ada Lovelace"
-            value={founderName}
-            onChange={setFounderName}
-          />
-          <Field
-            label="Founder handle"
-            hint="So people can find you. Public on your profile."
-            placeholder="@adalovelace"
-            value={founderHandle}
-            onChange={setFounderHandle}
+        ← Back
+      </Link>
+      <h1 className="text-3xl font-bold mb-2">Submit a demo</h1>
+      <p className="text-neutral-400 mb-8">
+        Share a great product demo with the community.
+      </p>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm font-medium mb-1.5">Title</label>
+          <input
+            type="text"
+            required
+            value={form.title}
+            onChange={(e) => update("title", e.target.value)}
+            className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-[#ff5a3c]"
+            placeholder="What's the demo called?"
           />
         </div>
-
-        {error && (
-          <p
-            role="alert"
-            className="rounded-xl border border-red-500/40 bg-red-500/10 px-3.5 py-2.5 text-[13px] text-red-300"
-          >
-            {error}
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-          <p className="flex items-center gap-2 text-[12px] text-muted">
-            <CheckCircle2 className="h-3.5 w-3.5 text-accent" />
-            Reviewed by a human before going live. Usually within 2 hours.
-          </p>
-          <div className="flex gap-2">
-            <Link
-              href="/"
-              className="rounded-full border border-border px-4 py-2 text-[13px] text-foreground hover:border-accent"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={status === "submitting"}
-              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2 text-[13px] font-medium text-black transition hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {status === "submitting" && (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              )}
-              {status === "submitting" ? "Submitting…" : "Submit demo"}
-            </button>
-          </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">URL</label>
+          <input
+            type="url"
+            required
+            value={form.url}
+            onChange={(e) => update("url", e.target.value)}
+            className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-[#ff5a3c]"
+            placeholder="https://..."
+          />
         </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">Tagline</label>
+          <input
+            type="text"
+            value={form.tagline}
+            onChange={(e) => update("tagline", e.target.value)}
+            className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-[#ff5a3c]"
+            placeholder="One line that sells it"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">Category</label>
+          <input
+            type="text"
+            value={form.category}
+            onChange={(e) => update("category", e.target.value)}
+            className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-[#ff5a3c]"
+            placeholder="AI, Dev Tools, Consumer..."
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Your name
+          </label>
+          <input
+            type="text"
+            value={form.author}
+            onChange={(e) => update("author", e.target.value)}
+            className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 outline-none focus:border-[#ff5a3c]"
+            placeholder="Who's submitting?"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full rounded-lg bg-[#ff5a3c] text-white font-semibold py-2.5 hover:bg-[#ff6f54] transition-colors"
+        >
+          Submit demo
+        </button>
       </form>
     </main>
   );
 }
 
-function ThanksScreen({ result }: { result: SubmitResult }) {
-  const [shareState, setShareState] = useState<"idle" | "shared" | "copied">(
-    "idle",
-  );
-
-  // Placeholder share URL until per-submission pages exist.
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/submit`
-      : "https://demohunt.app/submit";
-
-  async function handleShare() {
-    const shareData = {
-      title: result.title,
-      text: result.tagline || result.title,
-      url: shareUrl,
-    };
-
-    try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share(shareData);
-        setShareState("shared");
-        return;
-      }
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(shareUrl);
-        setShareState("copied");
-      }
-    } catch {
-      // User dismissed the share sheet — leave the button as-is.
-    }
-  }
-
+export default function SubmitPage() {
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-10">
-      <div className="overflow-hidden rounded-3xl border border-border bg-surface">
-        {result.thumbnail_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={result.thumbnail_url}
-            alt={result.title}
-            className="aspect-video w-full object-cover"
-          />
-        ) : (
-          <div className="flex aspect-video w-full items-center justify-center bg-background">
-            <Video className="h-8 w-8 text-muted" />
-          </div>
-        )}
-
-        <div className="p-6">
-          <p className="flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-accent">
-            <CheckCircle2 className="h-4 w-4" />
-            Thanks!
-          </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            {result.title}
-          </h1>
-          {result.tagline && (
-            <p className="mt-2 text-sm text-muted">{result.tagline}</p>
-          )}
-
-          <p className="mt-4 text-[13px] text-muted">
-            Your demo is in the queue. A human reviews every submission before it
-            goes live — usually within 2 hours. We&apos;ll be in touch.
-          </p>
-
-          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-5">
-            <button
-              type="button"
-              onClick={handleShare}
-              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2 text-[13px] font-medium text-black transition hover:bg-accent-soft"
-            >
-              <Share2 className="h-3.5 w-3.5" />
-              {shareState === "shared"
-                ? "Shared!"
-                : shareState === "copied"
-                  ? "Link copied!"
-                  : "Share this submission"}
-            </button>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-[13px] text-foreground hover:border-accent"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Back to the feed
-            </Link>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
-}
-
-function PathCard({
-  icon,
-  title,
-  body,
-  accent,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-  accent?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-2xl border p-4 ${
-        accent ? "border-accent/50 bg-accent/5" : "border-border bg-surface"
-      }`}
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-2xl px-4 py-10">
+          <h1 className="text-3xl font-bold mb-2">Submit a demo</h1>
+          <p className="text-neutral-400">Loading…</p>
+        </main>
+      }
     >
-      <span
-        className={`inline-flex h-7 w-7 items-center justify-center rounded-md ${
-          accent ? "bg-accent text-black" : "bg-background text-accent"
-        }`}
-      >
-        {icon}
-      </span>
-      <p className="mt-2 text-[13px] font-medium">{title}</p>
-      <p className="mt-0.5 text-[12px] text-muted">{body}</p>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  placeholder,
-  type = "text",
-  value,
-  onChange,
-  required,
-  autoFocus,
-}: {
-  label: string;
-  hint?: string;
-  placeholder?: string;
-  type?: string;
-  value: string;
-  onChange: (value: string) => void;
-  required?: boolean;
-  autoFocus?: boolean;
-}) {
-  return (
-    <label className="block space-y-1.5">
-      <span className="text-[12px] font-medium text-foreground">{label}</span>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        autoFocus={autoFocus}
-        className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-muted focus:border-accent focus:outline-none"
-      />
-      {hint && <span className="block text-[11px] text-muted">{hint}</span>}
-    </label>
+      <SubmitForm />
+    </Suspense>
   );
 }
