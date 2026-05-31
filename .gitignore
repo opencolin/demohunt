@@ -22,6 +22,9 @@
 
 # misc
 .DS_Store
+
+# runtime-written subscriber data (contains PII, never commit)
+/data/pending-subscribers.jsonl
 *.pem
 
 # debug
