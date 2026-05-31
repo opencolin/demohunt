@@ -3,30 +3,31 @@
 > Updated by each tick. Read this first if you're picking up cold.
 
 ## Last updated
-2026-05-28T15:25:00Z (v0 shipped → v1 kickoff)
+2026-05-28T15:36:00Z (v0+v1 shipped → v2 kickoff)
 
 ## Active release
-**v1 — Curated contributor loop** (council-revised)
+**v2 — Platform wedge** (council-revised; PWA + auth scaffold + digest scaffold)
 
 ## What's shipped (live in prod at https://demohunt.vercel.app)
-- **163 demos** across 3 video providers (YouTube/Loom/Mux). v0 added 54 new YouTube demos: Techstars Demo Day (13), AI Engineer World's Fair (12), Vercel HQ (10), Supabase (10), YC Founder Stories (9)
-- OG cards + twitter:player on `/demo/[id]` — every demo is share-ready
-- Share button — `navigator.share` with clipboard fallback and toast
-- `@vercel/analytics` mounted in layout
-- Next 16 viewport export (`themeColor: #0a0a0a`)
-- Feed uses `100dvh` instead of `100vh` (correct mobile viewport)
-- Mobile-landscape chrome-hidden mode (header / sidebar / back link)
-- Portrait + landscape view modes, J/K keyboard nav, follow, upvote, search
+- **168 demos** total (109 originals + 54 v0 sources + 5 v1 HackGPT)
+- v0: OG cards + twitter:player, share button, @vercel/analytics, viewport export, 100dvh feed
+- v1: `/submit` works end-to-end (POST `/api/submit` with YouTube oEmbed validation, share moment after success)
+- v1: 28 YouTube demos got their real durations backfilled (oEmbed lengthSeconds)
+- v1: pending submissions persist to `data/pending-submissions.jsonl` locally; production no-ops gracefully (read-only filesystem)
+- Mobile-landscape chrome-hidden, portrait+landscape view modes, J/K nav, follow, upvote, search
 
 ## What's in progress
-- v1 workflow about to spawn (3 worktree-isolated agents in parallel)
+- v2 workflow about to spawn (3 worktree-isolated agents in parallel)
 
 ## Open tasks (in priority order)
-1. **v1 — Devpost ingest** — scrape 2-3 top Devpost hackathons for projects with embedded YouTube videos
-2. **v1 — wire `/submit` standalone** with YouTube oEmbed auto-fill, share-moment after submit
-3. **v1 — backfill real durations** for existing 163 demos via oEmbed where possible
-4. **v1 — dead-link check** — for each Loom/Mux/YouTube demo, HEAD the video URL; mark demos with broken embeds
-5. **v2 — gated on traction**; queued
+1. **v2 PWA** — `manifest.ts` + iOS share-target + dynamic icons
+2. **v2 auth+DB scaffold** — Sign in with Vercel OAuth wiring + Neon Postgres schema (env-gated; falls back to localStorage when no DB)
+3. **v2 digest scaffold** — Resend cron at 0 16 * * * UTC; no-ops without RESEND_API_KEY
+4. **v2 verification** — Lighthouse mobile >= 95; PWA installable on iOS Safari
+5. **Manual user steps required for v2**:
+   - Provision Neon Postgres via Vercel Marketplace
+   - Set up Sign in with Vercel OAuth app
+   - Add `RESEND_API_KEY`, `CRON_SECRET`, `DATABASE_URL` to Vercel env
 
 ## v0 sources picked (54 demos, sourced 2026-05-28)
 | Source | Count | Notes |
