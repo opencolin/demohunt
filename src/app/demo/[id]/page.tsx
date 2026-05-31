@@ -1,13 +1,76 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Eye, Clock, MessageCircle, Mail, ExternalLink, Calendar, ArrowLeft, Code2 } from "lucide-react";
 import { UpvoteButton } from "@/components/upvote-button";
+import { DemoShareButton } from "@/components/demo-share-button";
 import { FollowButton } from "@/components/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { demoById, demos, founderBySlug } from "@/lib/data";
 import { formatCount, timeAgo, thumbnailFor, embedUrlFor, videoSrcFor } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const demo = demoById(id);
+  if (!demo) {
+    return { title: "Demo not found — Demo Hunt" };
+  }
+
+  const title = `${demo.title} — Demo Hunt`;
+  const description = demo.tagline;
+  const thumb = thumbnailFor(demo);
+  const image = { url: thumb, width: 1280, height: 720 };
+  const isEmbeddable = demo.videoProvider === "youtube" || demo.videoProvider === "mp4";
+  const playerUrl = embedUrlFor(demo.videoProvider, demo.videoId, { autoplay: false });
+
+  const openGraph: NonNullable<Metadata["openGraph"]> = {
+    title,
+    description,
+    type: "video.other",
+    images: [image],
+  };
+  if (isEmbeddable) {
+    openGraph.videos = [
+      {
+        url: playerUrl,
+        width: 1280,
+        height: 720,
+      },
+    ];
+  }
+
+  // Loom blocks X-Frame-Options in twitter player cards, so fall back to summary_large_image.
+  const twitter: NonNullable<Metadata["twitter"]> = isEmbeddable
+    ? {
+        card: "player",
+        title,
+        description,
+        images: [thumb],
+        players: [
+          {
+            playerUrl,
+            streamUrl: demo.videoProvider === "mp4" ? videoSrcFor(demo.videoProvider, demo.videoId) : playerUrl,
+            width: 1280,
+            height: 720,
+          },
+        ],
+      }
+    : {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [thumb],
+      };
+
+  return {
+    title,
+    description,
+    openGraph,
+    twitter,
+  };
+}
 
 export default async function DemoPage({ params }: Props) {
   const { id } = await params;
@@ -57,7 +120,10 @@ export default async function DemoPage({ params }: Props) {
           </div>
 
           <div className="mt-5 flex items-start gap-4">
-            <UpvoteButton initial={demo.upvotes} />
+            <div className="flex flex-col items-center gap-2">
+              <UpvoteButton initial={demo.upvotes} />
+              <DemoShareButton id={demo.id} title={demo.title} tagline={demo.tagline} />
+            </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-[22px] font-semibold leading-tight tracking-tight">
                 {demo.title}
