@@ -87,6 +87,30 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
     setHasInteracted(true);
   };
 
+  const onShare = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    const url = `https://demohunt.vercel.app/demo/${demo.id}`;
+    const shareData = { title: demo.title, text: demo.tagline, url };
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch {
+      // user cancelled or share failed — fall through to clipboard
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      window.dispatchEvent(
+        new CustomEvent("demohunt:toast", { detail: { message: "Link copied to clipboard" } }),
+      );
+    } catch {
+      // clipboard unavailable — last resort prompt
+      window.prompt("Copy this link", url);
+    }
+  };
+
   const player = !shouldRenderIframe ? (
     <img
       src={thumbnailFor(demo)}
@@ -126,7 +150,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
       <ActionButton href={`/demo/${demo.id}`} label="Comments" count={formatCount(demo.comments)}>
         <MessageCircle className="h-5 w-5" strokeWidth={2.2} />
       </ActionButton>
-      <ActionButton href="#" label="Share">
+      <ActionButton onClick={onShare} label="Share">
         <Share2 className="h-5 w-5" strokeWidth={2.2} />
       </ActionButton>
     </>
@@ -134,13 +158,13 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
 
   if (viewMode === "landscape") {
     return (
-      <article className="snap-start relative h-[calc(100vh-var(--header-h))] w-full bg-black">
+      <article className="snap-start relative h-[calc(100dvh-var(--header-h))] w-full bg-black">
         {/* Video — 16:9, as large as possible */}
         <div className="absolute inset-0 flex items-center justify-center p-3 sm:p-4">
           <div
             className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]"
             style={{
-              width: "min(100%, calc((100vh - var(--header-h) - 2rem) * 16 / 9))",
+              width: "min(100%, calc((100dvh - var(--header-h) - 2rem) * 16 / 9))",
             }}
           >
             {player}
@@ -246,7 +270,7 @@ export function VideoCard({ demo, founder, active, nearActive = false, viewMode 
 
   // Portrait
   return (
-    <article className="snap-start relative h-[calc(100vh-var(--header-h))] w-full">
+    <article className="snap-start relative h-[calc(100dvh-var(--header-h))] w-full">
       <div className="absolute inset-0 mx-auto flex max-w-md flex-col px-3 py-4 sm:py-6">
         <div className="relative flex-1 overflow-hidden rounded-3xl border border-border bg-black shadow-[0_30px_80px_-30px_rgba(255,90,60,0.25)]">
           <div className="absolute inset-0">{player}</div>
@@ -421,22 +445,21 @@ function SourceBadge({ demo }: { demo: Demo }) {
 
 function ActionButton({
   href,
+  onClick,
   label,
   count,
   children,
 }: {
-  href: string;
+  href?: string;
+  onClick?: (e: React.MouseEvent) => void;
   label: string;
   count?: string;
   children: React.ReactNode;
 }) {
-  return (
-    <Link
-      href={href}
-      onClick={(e) => e.stopPropagation()}
-      className="flex w-[68px] flex-col items-center justify-center gap-0.5 rounded-2xl border border-border bg-surface/80 px-2 py-3 text-foreground backdrop-blur-md transition hover:border-accent/60 active:scale-95"
-      aria-label={label}
-    >
+  const className =
+    "flex w-[68px] flex-col items-center justify-center gap-0.5 rounded-2xl border border-border bg-surface/80 px-2 py-3 text-foreground backdrop-blur-md transition hover:border-accent/60 active:scale-95";
+  const inner = (
+    <>
       {children}
       {count && (
         <span className="font-mono text-[12px] font-semibold tabular-nums text-foreground">
@@ -446,6 +469,23 @@ function ActionButton({
       <span className="font-mono text-[10px] uppercase tracking-wider text-foreground/65">
         {label}
       </span>
-    </Link>
+    </>
+  );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        onClick={(e) => e.stopPropagation()}
+        className={className}
+        aria-label={label}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} className={className} aria-label={label}>
+      {inner}
+    </button>
   );
 }
