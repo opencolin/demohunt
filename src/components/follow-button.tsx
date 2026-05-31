@@ -43,11 +43,23 @@ export function FollowButton({ founderSlug, founderName, variant = "pill", onCli
     e.stopPropagation();
     onClick?.(e);
     const current = readFollows();
-    const next = current.includes(founderSlug)
-      ? current.filter((s) => s !== founderSlug)
-      : [...current, founderSlug];
+    const willFollow = !current.includes(founderSlug);
+    const next = willFollow
+      ? [...current, founderSlug]
+      : current.filter((s) => s !== founderSlug);
+    // Optimistic localStorage update — keeps the UX instant and is the source
+    // of truth whenever the user isn't signed in / the DB isn't configured.
     writeFollows(next);
-    setFollowing(!following);
+    setFollowing(willFollow);
+
+    // Best-effort server sync. If the API reports it persisted the change for a
+    // signed-in user, that's authoritative; otherwise we silently keep the
+    // localStorage state we just wrote. Network errors never disrupt the UX.
+    void fetch(`/api/follow/${encodeURIComponent(founderSlug)}`, {
+      method: willFollow ? "POST" : "DELETE",
+    }).catch(() => {
+      /* offline / no session — localStorage already reflects the change */
+    });
   };
 
   const label = following ? "Following" : "Follow";

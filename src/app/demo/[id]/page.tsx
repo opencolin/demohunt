@@ -121,7 +121,7 @@ export default async function DemoPage({ params }: Props) {
 
           <div className="mt-5 flex items-start gap-4">
             <div className="flex flex-col items-center gap-2">
-              <UpvoteButton initial={demo.upvotes} />
+              <UpvoteButton initial={demo.upvotes} demoId={demo.id} />
               <DemoShareButton id={demo.id} title={demo.title} tagline={demo.tagline} />
             </div>
             <div className="min-w-0 flex-1">
