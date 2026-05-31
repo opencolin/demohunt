@@ -3,10 +3,10 @@
 > Updated by each tick. Read this first if you're picking up cold.
 
 ## Last updated
-2026-05-28T08:30:00Z (initial goal kickoff)
+2026-05-28T15:15:00Z (mid-v0 build)
 
 ## Active release
-**v0 — Real YC + real YouTube demos**
+**v0 — Real demos + share infrastructure** (council-revised; not YC-only)
 
 ## What's shipped (live in prod at https://demohunt.vercel.app)
 - 109 real demos across 3 video providers (YouTube/Loom/Mux)
@@ -15,16 +15,34 @@
 - 8 founders with verified badges, ~89 hackathon builders
 
 ## What's in progress
-- PM Council workflow drafting v0/v1/v2 scope (about to spawn)
-- v0 source agents (about to spawn after council resolves)
+- v0 implementation workflow `wf_1b279157-721` running in a worktree on `release/v0-yc-import`. Doing all of: data import (54 demos, 5 source-channel founders), OG/twitter:player metadata, share button + share API, @vercel/analytics, Next 16 viewport export, 100vh→100dvh feed fix. Builds and commits inside the worktree.
 
 ## Open tasks (in priority order)
-1. **PM Council** — get scope verdicts on v0, v1, v2 before kicking off implementation
-2. **v0 — YC YouTube channel scrape** — find all demo day playlists W23..W26, extract individual demo videos and presenting founder
-3. **v0 — YC company directory enrichment** — map each scraped video to a current YC company profile (real founder name, batch, company URL)
-4. **v0 — Add 80-150 YC demos to `src/lib/data.ts`** with `videoProvider: 'youtube'` and real YC batch tags
-5. **v0 — QA pass** — every new demo loads, has a real founder, has a real company URL
-6. **v0 — Ship to prod**
+1. **(waiting)** v0 workflow `wf_1b279157-721` completes → merge worktree into main → push → deploy to Vercel → re-alias → update this file
+2. **v0 — QA pass** — visit `/demo/400` (first new demo), verify YouTube embed plays, verify OG meta on view-source, verify navigator.share works on mobile, verify Analytics ping fires
+3. **v1 kickoff** — scrape Devpost top hackathons for embedded YouTube. Use the same pattern as Cerebral Valley scrape. Cap at 2-3 sources, ~80 demos.
+4. **v1 — wire `/submit` standalone** with oEmbed auto-fill (call `https://www.youtube.com/oembed?url=...&format=json`) and real durations
+5. **v2 — gated on traction**; do not start until v0+v1 share-loop is measured
+
+## v0 sources picked (54 demos, sourced 2026-05-28)
+| Source | Count | Notes |
+|---|---:|---|
+| Techstars Demo Day | 13 | Tulsa F'25 cohort founder pitches |
+| AI Engineer World's Fair | 12 | Capped from 28 candidates |
+| Vercel HQ | 10 | Ship + Launch Week walkthroughs |
+| Supabase | 10 | Launch Week feature demos |
+| YC Founder Stories | 9 | Including DoorDash & Ginkgo Demo Day classics |
+| **TOTAL NEW** | **54** | demo IDs 400–453 |
+
+YC removed from primary v0 path: YC stopped publishing Demo Day publicly on YouTube. See `docs/SOURCES.md` for the full source map the council assembled.
+
+## Blockers
+- None right now.
+
+## Recent decisions
+- Schedule wakeup minimum is 60s; user asked for 30s ticks → using 60s.
+- v0 expanded BEYOND YC to Techstars/AI Engineer/Vercel/Supabase/YC because YC Demo Day playlists are private. Council approved keeping existing 109 Loom/Mux demos.
+- Worktree workflow pattern: one agent per release on its own branch. Multi-agent fan-out across worktrees deferred to v1+ when there are independent file-area parallel tasks.
 
 ## Blockers
 - None right now.
