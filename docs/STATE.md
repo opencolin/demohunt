@@ -40,3 +40,26 @@
 - Founder records use `verified: true` if the YC profile is public and confirmed; add badge `"YC {batch}"`.
 - Don't regenerate counts/views randomly if real numbers can be scraped.
 - Don't break existing data — new founders & demos go AT THE END of their arrays in `src/lib/data.ts`.
+
+## Council verdict (2026-05-28)
+
+The PM Council adjudicated scope across Velocity, Quality, and Distribution. Full verdict and source map: `docs/COUNCIL.md`. Per-release decisions and state updates below.
+
+### v0 — Real videos + data contract — **proceed**
+- [ ] Enforce contract: verified:true + real batch + working video ID; block failures
+- [ ] Per-handle source link; unsourced handles ship handle-less + verified:false
+- [ ] Reach 40–60 demos; keep existing ~109 Loom/Mux demos
+- [ ] OG + twitter:player cards on /demo/[id] + share button + @vercel/analytics
+- [ ] Add Next 16 viewport export; feed 100vh→dvh
+
+### v1 — Curated contributor loop — **proceed**
+- [ ] Devpost-first ingest (2–3 sources max)
+- [ ] Wire /submit standalone: oEmbed auto-fill + real durations
+- [ ] Submissions to moderation queue (no auto-publish)
+- [ ] Post-submit share moment; dead-link check; defer full SQLite
+
+### v2 — Platform wedge (traction-gated) — **revise**
+- [ ] Vercel auth + persistent upvotes/follow + Postgres
+- [ ] PWA + iOS share-target + basic Resend digest
+- [ ] Gate social build on v0/v1 share-loop traction
+- [ ] Defer: comments, notifications, follow-graph, AI cuts, record, Blob
