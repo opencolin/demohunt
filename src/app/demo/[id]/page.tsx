@@ -84,7 +84,7 @@ export default async function DemoPage({ params }: Props) {
     .slice(0, 4);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6">
+    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 xl:px-8">
       <Link
         href="/"
         className="compact-hide inline-flex items-center gap-1 text-[12px] text-muted hover:text-foreground"

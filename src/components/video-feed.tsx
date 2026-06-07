@@ -27,6 +27,12 @@ export function VideoFeed({ demos, founderMap, currentTab }: Props) {
     const stored = localStorage.getItem(VIEW_MODE_KEY);
     if (stored === "landscape" || stored === "portrait") {
       setViewMode(stored);
+      return;
+    }
+    // No preference yet: default landscape on wide viewports, portrait on
+    // phones / narrow tablets so doomscroll feels right by default.
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setViewMode("landscape");
     }
   }, []);
 
